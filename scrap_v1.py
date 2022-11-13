@@ -24,8 +24,8 @@ user_id = 44342982
 while page<3:
     data = load_user_data(user_id, page, s)
     if contain_movies_data(data):
-        with open('./page_%d.html' % (page), 'w') as output_file:
-            output_file.write(data.encode('cp1251')) #
+        with open('./pages/page_%d.html' % (page), 'w', encoding="iso-8859-1") as output_file:
+            output_file.write(data) #
             page += 1
     else:
             break
