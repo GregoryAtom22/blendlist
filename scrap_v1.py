@@ -8,24 +8,25 @@ s.headers.update({
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0'
     })
 
-def load_user_data(user_id, page, session):
+def load_user_data(user_id, page, session): #загрузка данных странницы
     url = 'http://www.kinopoisk.ru/user/%d/votes/list/ord/date/page/%d/#list' % (user_id, page)
     request = session.get(url)
     return request.text
 
 def contain_movies_data(text):
     soup = BeautifulSoup(text, features="lxml")
-    film_list = soup.find_all('div', class_='profileFilmsList')
+    film_list = soup.find_all('div', class_='profileFilmsList') #в этом теге лежит весь список, проверяем его наличие
     return film_list is not None
 
 # loading files
-page = 1
-user_id = 44342982
-while page<3:
+page = 1 #список фильмов в нескольких страницах
+user_id = 44342982 #контретны пользователь
+#пролистываем все страницы списка
+while page<3: #<3 ограничение количества страниц для теста,
     data = load_user_data(user_id, page, s)
     if contain_movies_data(data):
-        with open('./pages/page_%d.html' % (page), 'w', encoding="iso-8859-1") as output_file:
-            output_file.write(data) #
+        with open('./pages/page_%d.html' % (page), 'w', encoding="iso-8859-1") as output_file: #читаем
+            output_file.write(data) #записываем эту странницу в свой файл
             page += 1
     else:
             break
@@ -41,7 +42,7 @@ def parse_user_datafile_bs(filename):
 
     soup = BeautifulSoup(text)
     film_list = film_list = soup.find('div', class_='profileFilmsList')
-    items = film_list.find_all('div', class_=['item', 'item even'])
+    items = film_list.find_all('div', class_=['item', 'item even']) #не уверена надо проверять
     for item in items:
         # getting movie_id
         movie_link = item.find('div', class_='nameRus').find('a').get('href')
