@@ -2,6 +2,8 @@ import requests #HTTP library for Python
 from bs4 import BeautifulSoup #Python library for pulling data out of HTML and XML files
 import re #This module provides regular expression matching operations similar to those found
 from lxml import html #The lxml XML toolkit is a Pythonic binding for the C libraries libxml2 and libxslt
+import os
+import json
 # establishing session
 s = requests.Session()
 s.headers.update({
@@ -9,6 +11,14 @@ s.headers.update({
         'Referer': 'https://www.kinopoisk.ru/user/',
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36'
     })
+def create_dir(path):
+    if os.path.exists(path):
+        return
+    else:
+        os.mkdir(path)
+
+create_dir("./user_data")
+create_dir("./pages")
 
 def load_user_data(user_id, page, session): #загрузка данных странницы
     url = 'http://www.kinopoisk.ru/user/%d/votes/list/ord/date/page/%d/#list' % (user_id, page)
@@ -34,7 +44,7 @@ while page<3: #<3 ограничение количества страниц д�
             break
 
 def read_file(filename):
-    with open(filename) as input_file:
+    with open(filename, 'r', encoding="utf-8") as input_file:
         text = input_file.read()
     return text
 
@@ -42,7 +52,7 @@ def parse_user_datafile_bs(filename):
     results = []
     text = read_file(filename)
 
-    soup = BeautifulSoup(text)
+    soup = BeautifulSoup(text, features="lxml")
     film_list = film_list = soup.find('div', class_='profileFilmsList')
     items = film_list.find_all('div', class_=['item', 'item even']) #не уверена надо проверять
     for item in items:
@@ -108,3 +118,10 @@ def parse_user_datafile_lxml(filename):
                 'movie_desc': movie_desc
             })
     return results
+
+
+results = []
+for filename in os.listdir('./pages/'):
+    results.extend(parse_user_datafile_bs('./pages/' + filename))
+with open('./user_data/user%d_data.json' % (user_id), 'w') as user_json_data:
+    user_json_data.write(json.dumps(results))
